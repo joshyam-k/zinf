@@ -1,15 +1,21 @@
 # Imports
 #' @importFrom cli cli_abort
 
-validate_args <- function(f, x) {
-  if(attr(terms(f), "response") == 0)
-    cli_abort(c(
-      "x" = "Formula object must include a response variable"
-    ))
-  if(!is.data.frame(x))
-    cli_abort(c(
-      "x" = "argument `data` must be of class 'data.frame'"
-    ))
+validate_args <- function(f1, f2, x) {
+
+  args_val <- function(f, x) {
+    if(attr(terms(f), "response") == 0)
+      cli_abort(c(
+        "x" = "Formula object must include a response variable"
+      ))
+    if(!is.data.frame(x))
+      cli_abort(c(
+        "x" = "argument `data` must be of class 'data.frame'"
+      ))
+  }
+
+  purrr::walk(c(f1, f2), ~ args_val(.x, x))
+
 }
 
 check_mlm <- function(all_terms) {
@@ -42,30 +48,35 @@ extract_var_from_rf <- function(all_terms) {
 
 }
 
-check_names_match <- function(object, ref) {
+check_names_match <- function(f1, f2, ref) {
 
-  object <- terms(object)
-  factors <- row.names(attr(object, "factors"))
-  term_labels <- attr(object, "term.labels")
+  name_match <- function(object, ref) {
+    object <- terms(object)
+    factors <- row.names(attr(object, "factors"))
+    term_labels <- attr(object, "term.labels")
 
-  mlm <- check_mlm(term_labels)
+    mlm <- check_mlm(term_labels)
 
-  if(mlm) {
+    if(mlm) {
 
-    non_reffect_terms <- factors[!stringr::str_detect(factors, "\\|")]
-    reffect <- factors[stringr::str_detect(factors, "\\|")]
-    reffect_terms <- extract_var_from_rf(reffect)
+      non_reffect_terms <- factors[!stringr::str_detect(factors, "\\|")]
+      reffect <- factors[stringr::str_detect(factors, "\\|")]
+      reffect_terms <- extract_var_from_rf(reffect)
 
-    all_names <- c(non_reffect_terms, reffect_terms)
+      all_names <- c(non_reffect_terms, reffect_terms)
 
-  } else {
-    all_names <- factors
+    } else {
+      all_names <- factors
+    }
+
+    if(!all(all_names %in% ref)) {
+      cli_abort(c(
+        "x" = "All names specified in the formula must also exist in the input dataset"
+      ))
+    }
   }
 
-  if(!all(all_names %in% ref)) {
-    cli_abort(c(
-      "x" = "All names specified in the formula must also exist in the input dataset"
-    ))
-  }
+  purrr::walk(c(f1, f2), ~ name_match(.x, ref))
+
 
 }

@@ -9,15 +9,8 @@ zinf_freq <- function(x, ...){
 zinf_freq.formula <- function(formula_lm, formula_logreg, data, ...) {
 
   funcCall <- match.call(expand.dots = T)
-  model_formulas <- list(formula_lm, formula_logreg)
-  purrr::map(
-    model_formulas,
-    ~ validate_args(.x, data)
-    )
-  purrr::map(
-    model_formulas,
-    ~ check_names_match(.x, names(data))
-    )
+  check_names_match(formula_lm, formula_logreg, names(data))
+  validate_args(formula_lm, formula_logreg, data)
 
   response <- formula_lm[[2]]
 
@@ -35,6 +28,28 @@ zinf_freq.formula <- function(formula_lm, formula_logreg, data, ...) {
 
   class(out) <- "zinf_freq"
   out
+
+}
+
+#' @export
+summary.zinf_freq <- function(object, ...) {
+  out <- list(
+    call = object$call,
+    lm = object$lm,
+    logreg = object$logreg
+  )
+
+  class(out) <- "summary.zinf_freq"
+  out
+}
+
+#' @export
+print.summary.zinf_freq <- function(object, ...) {
+
+  summary_lm <- summary(object$lm)
+  summary_logreg <- summary(object$logreg)
+  both_summary <- list(summary_lm, summary_logreg)
+  purrr::walk(both_summary, print)
 
 }
 
