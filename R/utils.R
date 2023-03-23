@@ -1,15 +1,15 @@
 # Imports
 #' @importFrom cli cli_abort
 
-
-
-check_formula <- function(object) {
-  if(!inherits(object, "formula")) {
-      cli_abort(c(
-        "{.var object} must be a formula object",
-        "x" = "You've supplied a {.cls {class(object)}} object"
-      ))
-  }
+validate_args <- function(f, x) {
+  if(attr(terms(f), "response") == 0)
+    cli_abort(c(
+      "x" = "Formula object must include a response variable"
+    ))
+  if(!is.data.frame(x))
+    cli_abort(c(
+      "x" = "argument `data` must be of class 'data.frame'"
+    ))
 }
 
 check_mlm <- function(all_terms) {
@@ -64,7 +64,7 @@ check_names_match <- function(object, ref) {
 
   if(!all(all_names %in% ref)) {
     cli_abort(c(
-      "x" = "All names specified in the formula must also exist in the data frame"
+      "x" = "All names specified in the formula must also exist in the input dataset"
     ))
   }
 
