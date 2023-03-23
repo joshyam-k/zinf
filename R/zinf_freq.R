@@ -11,7 +11,7 @@ zinf_freq.default <- function(formula, data, ...) {
 
   funcCall <- match.call(expand.dots = T)
   check_formula(formula)
-
+  check_names_match(formula, names(data))
 
   lme4::lmer(formula)
 
