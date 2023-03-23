@@ -48,7 +48,12 @@ print.summary.zinf_freq <- function(object, ...) {
 
   summary_lm <- summary(object$lm)
   summary_logreg <- summary(object$logreg)
-  both_summary <- list(summary_lm, summary_logreg)
+  both_summary <- list(
+    "---------------Y Mod---------------",
+    summary_lm,
+    "---------------Z Mod---------------",
+    summary_logreg
+    )
   purrr::walk(both_summary, print)
 
 }
