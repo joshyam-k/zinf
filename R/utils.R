@@ -28,6 +28,20 @@ check_mlm <- function(all_terms) {
 
 }
 
+extract_var_from_rf <- function(all_terms) {
+
+  by_term <- function(term) {
+    term <- stringr::str_remove(term, "1\\s?\\|") |>
+      stringr::str_trim(side = "both")
+
+    return(term)
+  }
+
+  out <- purrr::map_chr(all_terms, by_term)
+  return(out)
+
+}
+
 check_names_match <- function(object, ref) {
 
   object <- terms(object)
@@ -38,16 +52,20 @@ check_names_match <- function(object, ref) {
 
   if(mlm) {
 
-    non_rf <- factors[!stringr::str_detect(factors, "\\|")]
-    rf <- factors[stringr::str_detect(factors, "\\|")]
+    non_reffect_terms <- factors[!stringr::str_detect(factors, "\\|")]
+    reffect <- factors[stringr::str_detect(factors, "\\|")]
+    reffect_terms <- extract_var_from_rf(reffect)
 
-
+    all_names <- c(non_reffect_terms, reffect_terms)
 
   } else {
     all_names <- factors
   }
 
-
-
+  if(!all(all_names %in% ref)) {
+    cli_abort(c(
+      "x" = "All names specified in the formula must also exist in the data frame"
+    ))
+  }
 
 }
