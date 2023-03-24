@@ -49,13 +49,23 @@ print.summary.zinf_freq <- function(object, ...) {
   summary_lm <- summary(object$lm)
   summary_logreg <- summary(object$logreg)
   both_summary <- list(
-    "---------------Y Mod---------------",
+    '---------------Y Mod---------------',
     summary_lm,
-    "---------------Z Mod---------------",
+    '---------------Z Mod---------------',
     summary_logreg
     )
   purrr::walk(both_summary, print)
 
+}
+
+#' @export
+predict.zinf_freq <- function(object, newdata = NULL, ...) {
+  lm <- object$lm
+  logreg <- object$logreg
+  pred_lm <- predict(lm, newdata = newdata, type = "response")
+  pred_logreg <- predict(logreg, newdata = newdata, type = "response")
+  pred <- pred_lm * pred_logreg
+  return(pred)
 }
 
 
