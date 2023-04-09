@@ -80,3 +80,18 @@ check_names_match <- function(f1, f2, ref) {
 
 
 }
+
+check_family <- function(o1, o2) {
+  if(!(o1 %in% c("Gamma", "gaussian"))){
+    cli_abort(c(
+      "x" = "Support only exists for modelling the non-zero response using a Gamma or Gaussian glm"
+    ))
+  }
+
+  if(!(o2 %in% c("binomial"))) {
+    cli_abort(c(
+      "x" = "Support only exists for a logistic regression classification model"
+    ))
+  }
+}
+

@@ -16,5 +16,6 @@ Imports:
   stringr,
   purrr,
   tidyselect,
-  broom
+  broom,
+  rstanarm
 RoxygenNote: 7.2.3
