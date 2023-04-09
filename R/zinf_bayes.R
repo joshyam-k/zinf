@@ -14,18 +14,10 @@ zinf_bayes.stanreg <- function(mody, modp){
 
   family_y <- mody$family$family
   family_p <- modp$family$family
-  link_y <- mody$family$link
-  pass_y <- c(family_y, link_y)
 
   check_family(family_y, family_p)
 
-  mcmc_out_y <- as.data.frame(mody)
-  mcmc_out_p <- as.data.frame(modp)
-
   out <- list(
-    mcmc_y = mcmc_out_y,
-    mcmc_p = mcmc_out_p,
-    mod_info_y = pass_y,
     mods = list(mody, modp),
     call = funcCall
   )
@@ -59,6 +51,19 @@ print.summary.zinf_bayes <- function(x, ...){
 }
 
 
+predict.zinf_bayes <- function(object, newdata, ...) {
+  mod_y <- as.data.frame(object$mods[[1]])
+  mod_p <- as.data.frame(object$mods[[2]])
+
+  family_y <- object$mods[[1]]$family$family
+  link_y <- object$mods[[1]]$family$link
+
+  # need to know number of groups to predict on
+
+
+}
+
+
 
 # ex ---------
 # library(rstanarm)
@@ -87,3 +92,11 @@ print.summary.zinf_bayes <- function(x, ...){
 # #
 #m <- zinf_bayes(t, p)
 
+
+as.data.frame(p) |> head()
+
+
+
+mod <- lme4::lmer(mpg > 16 ~ wt + (1 | cyl), mtcars)
+
+predict(mod, mtcars[mtcars$cyl == 8, ])

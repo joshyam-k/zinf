@@ -95,3 +95,7 @@ check_family <- function(o1, o2) {
   }
 }
 
+
+log_reg_predict <- function(mcmc, newdata) {
+
+}
