@@ -5,7 +5,6 @@ zinf_bayes <- function(x, ...){
 
 #' @export
 #' @rawNamespace export(zinf_bayes.stanreg)
-
 zinf_bayes.stanreg <- function(mody, modp){
 
   funcCall <- match.call(expand.dots = T)
@@ -27,11 +26,35 @@ zinf_bayes.stanreg <- function(mody, modp){
     mcmc_y = mcmc_out_y,
     mcmc_p = mcmc_out_p,
     mod_info_y = pass_y,
+    mods = list(mody, modp),
     call = funcCall
   )
 
   class(out) <- "zinf_bayes"
   out
+
+}
+
+#' @export
+summary.zinf_bayes <- function(object, ...) {
+
+  out <- list(
+    s1 = summary(object$mods[[1]]),
+    s2 = summary(object$mods[[2]])
+  )
+
+  class(out) <- "summary.zinf_bayes"
+  out
+}
+
+#' @export
+print.summary.zinf_bayes <- function(x, ...){
+
+  cat("\nY MODEL: \n")
+  print(x$s1)
+  cat("\nZ MODEL: \n")
+  print(x$s2)
+  invisible(x)
 
 }
 
@@ -62,5 +85,5 @@ zinf_bayes.stanreg <- function(mody, modp){
 #   cores = parallel::detectCores()
 # )
 # #
-zinf_bayes(t, p)
+#m <- zinf_bayes(t, p)
 
