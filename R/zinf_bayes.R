@@ -59,7 +59,12 @@ predict.zinf_bayes <- function(object, newdata, ...) {
   link_y <- object$mods[[1]]$family$link
 
   # need to know number of groups to predict on
+  mod_terms <- attr(terms(object$mods[[1]]$formula), "term.labels")
+  id <- stringr::str_which(mod_terms, "\\|")
+  grp_term <- stringr::str_extract(mod_terms[id], "(?<=(\\|)).*") |>
+    stringr::str_trim(side = "both")
 
+  all_grps <- unique(newdata[ , rf_term])
 
 }
 
@@ -94,8 +99,6 @@ predict.zinf_bayes <- function(object, newdata, ...) {
 
 
 as.data.frame(p) |> head()
-
-
 
 mod <- lme4::lmer(mpg > 16 ~ wt + (1 | cyl), mtcars)
 
