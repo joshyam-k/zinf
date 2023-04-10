@@ -121,6 +121,13 @@ log_reg_predict <- function(mcmc, grp_term, fixed_term, newdata) {
   mcmc_sub <- mcmc |>
     dplyr::select(tidyselect::any_of(c("(Intercept)", "sigma", fixed_term, rf)))
 
+  # matrix multiplication?
+  # each row of a matrix is the result of calculating mu for a single newdata row
+  # across every row of the mcmc
+
+  n_iter <- nrow(mcmc)
+
+
 
 
 }
