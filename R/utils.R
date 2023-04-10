@@ -95,7 +95,32 @@ check_family <- function(o1, o2) {
   }
 }
 
+extract_test_sets <- function(id, x, grp_term, fixed_term) {
+  sub <- x[x[ , grp_term] == id, ]
+  sub <- sub |>
+    dplyr::select(all_of(c(fixed_term, grp_term)))
+  return(sub)
+}
 
-log_reg_predict <- function(mcmc, newdata) {
+validate_newdata <- function(x, names_needed) {
+  if(!all(names_needed %in% names(x))){
+    cli_abort(c(
+      "x" = "new data must contain all of the variables used to build the model"
+    ))
+  }
+}
+
+
+log_reg_predict <- function(mcmc, grp_term, fixed_term, newdata) {
+
+  # subsetting mcmc df
+  rf <- names(mcmc) |>
+    stringr::str_subset("b\\[") |>
+    stringr::str_subset(as.character(grp_term))
+
+  mcmc_sub <- mcmc |>
+    dplyr::select(tidyselect::any_of(c("(Intercept)", "sigma", fixed_term, rf)))
+
+
 
 }
