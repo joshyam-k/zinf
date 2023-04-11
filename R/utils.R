@@ -116,7 +116,7 @@ log_reg_predict <- function(mcmc, grp_id, fixed_term, newdata) {
   # subsetting mcmc df
   rf <- names(mcmc) |>
     stringr::str_subset("b\\[") |>
-    stringr::str_subset(as.character(grp_id))
+    stringr::str_subset(paste0(":", as.character(grp_id), "]"))
 
   mat_mcmc_sub <- mcmc |>
     dplyr::select(tidyselect::all_of(c("(Intercept)", fixed_term, rf))) |>
@@ -148,7 +148,7 @@ normal_predict <- function(mcmc, grp_id, fixed_term, newdata) {
 
   rf <- names(mcmc) |>
     stringr::str_subset("b\\[") |>
-    stringr::str_subset(as.character(grp_id))
+    stringr::str_subset(paste0(":", as.character(grp_id), "]"))
 
   mat_mcmc_sub <- mcmc |>
     dplyr::select(tidyselect::all_of(c("(Intercept)", fixed_term, rf))) |>

@@ -65,7 +65,7 @@ predict.zinf_bayes <- function(object, newdata, ...) {
   grp_term <- stringr::str_extract(mod_terms[rand_id], "(?<=(\\|)).*") |>
     stringr::str_trim(side = "both")
 
-  all_grps <- unique(newdata[ , rf_term])
+  all_grps <- unique(newdata[ , grp_term])
 
   fixed_term <- mod_terms[-rand_id]
 
@@ -105,35 +105,43 @@ predict.zinf_bayes <- function(object, newdata, ...) {
 
 
 # ex ---------
-library(rstanarm)
-t <- stan_lmer(
-  mpg ~ wt + (1 | cyl),
-  data = mtcars,
-  prior_intercept = normal(40, 10),
-  prior = normal(3, 1),
-  prior_aux = exponential(1),
-  prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
-  chains = 4, iter = 5000, seed = 84735,
-  cores = parallel::detectCores()
-)
+# library(rstanarm)
+# t <- stan_lmer(
+#   Y ~ X + (1 | rfid),
+#   data = df,
+#   prior_intercept = normal(40, 10),
+#   prior = normal(3, 1),
+#   prior_aux = exponential(1),
+#   prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
+#   chains = 4, iter = 5000, seed = 84735,
+#   cores = parallel::detectCores()
+# )
+#
+# p <- stan_glmer(
+#   Z ~X + (1 | rfid),
+#   data = df,
+#   family = binomial,
+#   prior_intercept = normal(40, 10),
+#   prior = normal(3, 1),
+#   prior_aux = exponential(1),
+#   prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
+#   chains = 4, iter = 5000, seed = 84735,
+#   cores = parallel::detectCores()
+# )
+#
+# test <- population |>
+#    filter(group == 1) %>%
+#   rename(rfid = group)
+#
+# m <- zinf_bayes(t, p)
 
-p <- stan_glmer(
-  mpg > 16 ~ wt + (1 | cyl),
-  data = mtcars,
-  family = binomial,
-  prior_intercept = normal(40, 10),
-  prior = normal(3, 1),
-  prior_aux = exponential(1),
-  prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
-  chains = 4, iter = 5000, seed = 84735,
-  cores = parallel::detectCores()
-)
+# p <- predict(m, test)
 #
-m <- zinf_bayes(t, p)
+# tibble(
+#   x = p$rfid
+# ) %>%
+#   ggplot(aes(x = x)) +
+#   geom_density() +
+#   geom_vline(xintercept = 27)
 
-#
-# as.data.frame(p) |> head()
-#
-# mod <- lme4::lmer(mpg > 16 ~ wt + (1 | cyl), mtcars)
-#
-# predict(mod, mtcars[mtcars$cyl == 8, ])
+
