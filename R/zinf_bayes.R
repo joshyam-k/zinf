@@ -49,7 +49,7 @@ print.summary.zinf_bayes <- function(x, ...){
 
 }
 
-
+#' @export
 predict.zinf_bayes <- function(object, newdata, ...) {
 
 
@@ -81,40 +81,55 @@ predict.zinf_bayes <- function(object, newdata, ...) {
       fixed_term = fixed_term
       ))
 
+  # iterate over test_sets
+  if(family_y == "gaussian") {
 
+    all_res <- purrr::map2(
+      .x = test_sets,
+      .y = all_grps,
+      .f = ~ full_gaussian_predict(
+        mcmc_y = mod_y,
+        mcmc_p = mod_p,
+        grp_id = .y,
+        fixed_term = fixed_term,
+        newdata = .x
+      )
+    )
 
+  }
 
+  return(all_res)
 
 }
 
 
 
 # ex ---------
-# library(rstanarm)
-# t <- stan_lmer(
-#   mpg ~ wt + (1 | cyl),
-#   data = mtcars,
-#   prior_intercept = normal(40, 10),
-#   prior = normal(3, 1),
-#   prior_aux = exponential(1),
-#   prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
-#   chains = 4, iter = 5000, seed = 84735,
-#   cores = parallel::detectCores()
-# )
+library(rstanarm)
+t <- stan_lmer(
+  mpg ~ wt + (1 | cyl),
+  data = mtcars,
+  prior_intercept = normal(40, 10),
+  prior = normal(3, 1),
+  prior_aux = exponential(1),
+  prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
+  chains = 4, iter = 5000, seed = 84735,
+  cores = parallel::detectCores()
+)
+
+p <- stan_glmer(
+  mpg > 16 ~ wt + (1 | cyl),
+  data = mtcars,
+  family = binomial,
+  prior_intercept = normal(40, 10),
+  prior = normal(3, 1),
+  prior_aux = exponential(1),
+  prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
+  chains = 4, iter = 5000, seed = 84735,
+  cores = parallel::detectCores()
+)
 #
-# p <- stan_glmer(
-#   mpg > 16 ~ wt + (1 | cyl),
-#   data = mtcars,
-#   family = binomial,
-#   prior_intercept = normal(40, 10),
-#   prior = normal(3, 1),
-#   prior_aux = exponential(1),
-#   prior_covariance = decov(reg = 1, conc = 1, shape = 1, scale = 1),
-#   chains = 4, iter = 5000, seed = 84735,
-#   cores = parallel::detectCores()
-# )
-# #
-# m <- zinf_bayes(t, p)
+m <- zinf_bayes(t, p)
 
 #
 # as.data.frame(p) |> head()

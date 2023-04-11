@@ -111,21 +111,91 @@ validate_newdata <- function(x, names_needed) {
 }
 
 
-log_reg_predict <- function(mcmc, grp_term, fixed_term, newdata) {
+log_reg_predict <- function(mcmc, grp_id, fixed_term, newdata) {
 
   # subsetting mcmc df
   rf <- names(mcmc) |>
     stringr::str_subset("b\\[") |>
-    stringr::str_subset(as.character(grp_term))
+    stringr::str_subset(as.character(grp_id))
 
-  mcmc_sub <- mcmc |>
-    dplyr::select(tidyselect::any_of(c("(Intercept)", "sigma", fixed_term, rf)))
+  mat_mcmc_sub <- mcmc |>
+    dplyr::select(tidyselect::all_of(c("(Intercept)", fixed_term, rf))) |>
+    t()
 
-  # matrix multiplication?
-  # each row of a matrix is the result of calculating mu for a single newdata row
-  # across every row of the mcmc
+  # remove rownames for this step
+  rownames(newdata) <- NULL
 
-  n_iter <- nrow(mcmc)
+  mat_newdata <- newdata |>
+    dplyr::select(tidyselect::all_of(fixed_term)) |>
+    dplyr::mutate(intercept = 1, rf = 1) |>
+    dplyr::select(intercept, tidyselect::all_of(fixed_term), rf) |>
+    as.matrix()
+
+  mat_mult <- mat_newdata %*% mat_mcmc_sub
+
+  sim_bernoulli <- function(x) {
+    link <- 1/(1 + exp(-x))
+    rbinom(1, 1, link)
+  }
+
+  mat_sim <- apply(mat_mult, c(1, 2), sim_bernoulli)
+
+  return(mat_sim)
+
+}
+
+normal_predict <- function(mcmc, grp_id, fixed_term, newdata) {
+
+  rf <- names(mcmc) |>
+    stringr::str_subset("b\\[") |>
+    stringr::str_subset(as.character(grp_id))
+
+  mat_mcmc_sub <- mcmc |>
+    dplyr::select(tidyselect::all_of(c("(Intercept)", fixed_term, rf))) |>
+    t()
+
+  mcmc_sigma <- mcmc |>
+    dplyr::select("sigma") |>
+    as.matrix()
+
+  rownames(newdata) <- NULL
+
+  mat_newdata <- newdata |>
+    dplyr::select(tidyselect::all_of(fixed_term)) |>
+    dplyr::mutate(intercept = 1, rf = 1) |>
+    dplyr::select(intercept, tidyselect::all_of(fixed_term), rf) |>
+    as.matrix()
+
+  mat_mult <- mat_newdata %*% mat_mcmc_sub
+
+  sim_normal <- function(x, sig) {
+    rnorm(1, mean = x, sd = sig)
+  }
+
+  mat_sim <- mapply(sim_normal, x = mat_mult, sig = mcmc_sigma) |>
+    matrix(ncol = nrow(mcmc))
+
+  return(mat_sim)
+
+
+}
+
+full_gaussian_predict <- function(mcmc_y, mcmc_p, grp_id, fixed_term, newdata) {
+  p_component <- log_reg_predict(mcmc_p, grp_id, fixed_term, newdata)
+  y_component <- normal_predict(mcmc_y, grp_id, fixed_term, newdata)
+
+  if(!all(dim(p_component) == dim(y_component))) {
+    cli_abort(c(
+      "x" = "Problem with matrix mult"
+    ))
+  }
+
+  full <- y_component * p_component
+
+  post_pred <- apply(full, 2, mean)
+
+  return(post_pred)
+
 
 
 
