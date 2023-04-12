@@ -96,7 +96,10 @@ predict.zinf_bayes <- function(object, newdata, ...) {
 
   }
 
-  return(all_res)
+  mean_pred_res <- all_res |>
+    purrr::map_dbl(mean)
+
+  return(mean_pred_res)
 
 }
 
