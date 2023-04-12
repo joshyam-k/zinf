@@ -5,7 +5,7 @@ zinf_freq <- function(x, ...){
 
 #' Create a Frequentist Zero-Inflation Model
 #'
-#' zinf_freq is a generic function used to wrap together the two individual
+#' `zinf_freq()` is a generic function used to wrap together the two individual
 #' models in a zero-inflation model. The function invokes particular methods
 #' such as `summary` and `predict` that allow it to be used within typical
 #' R modeling workflows
