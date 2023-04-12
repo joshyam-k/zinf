@@ -3,6 +3,23 @@ zinf_freq <- function(x, ...){
   UseMethod("zinf_freq")
 }
 
+#' Create a Frequentist Zero-Inflation Model
+#'
+#' zinf_freq is a generic function used to wrap together the two individual
+#' models in a zero-inflation model. The function invokes particular methods
+#' such as `summary` and `predict` that allow it to be used within typical
+#' R modeling workflows
+#'
+#' Importantly, this generic does no model building itself. The
+#' pre-existing lme4 modeling functions are already so robust that it is
+#' sensible to lean on the quality of that software instead of trying to
+#' reinvent it within our own function
+#'
+#' @aliases zinf_freq
+#' @param mody A lme4::lmer() object.
+#' @param modp A lme4::glmer() object.
+#' @returns An object of class `zinf_freq`.
+#'
 #' @export
 #' @rawNamespace export(zinf_freq.merMod)
 zinf_freq.merMod <- function(mody, modp, ...) {

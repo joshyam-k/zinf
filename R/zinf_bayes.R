@@ -3,6 +3,24 @@ zinf_bayes <- function(x, ...){
   UseMethod("zinf_bayes")
 }
 
+
+#' Create a Bayesian Zero-Inflation Model
+#'
+#' zinf_bayes is a generic function used to wrap together the two individual
+#' models in a zero-inflation model. The function invokes particular methods
+#' such as `summary` and `predict` that allow it to be used within typical
+#' R modeling workflows
+#'
+#' Importantly, this generic does no model building itself. The
+#' pre-existing rstanarm modeling functions are already so robust that it is
+#' sensible to lean on the quality of that software instead of trying to
+#' reinvent it within our own function
+#'
+#' @aliases zinf_bayes
+#' @param mody A rstanarm::stan_lmer() object.
+#' @param modp A rstanarm::stan_glmer() object.
+#' @returns An object of class `zinf_bayes`.
+
 #' @export
 #' @rawNamespace export(zinf_bayes.stanreg)
 zinf_bayes.stanreg <- function(mody, modp, ...){
