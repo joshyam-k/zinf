@@ -5,13 +5,11 @@ zinf_bayes <- function(x, ...){
 
 #' @export
 #' @rawNamespace export(zinf_bayes.stanreg)
-zinf_bayes.stanreg <- function(mody, modp){
+zinf_bayes.stanreg <- function(mody, modp, ...){
 
   funcCall <- match.call(expand.dots = T)
-  # some check that the response is all nonzero in mody$data
 
   # checking model families
-
   family_y <- mody$family$family
   family_p <- modp$family$family
 
@@ -43,7 +41,7 @@ summary.zinf_bayes <- function(object, ...) {
 print.summary.zinf_bayes <- function(x, ...){
   cat("--------\nY MODEL: \n--------")
   print(x$s1)
-  cat("\n\n\n--------\nZ MODEL: \n--------")
+  cat("\n\n--------\nZ MODEL: \n--------")
   print(x$s2)
   invisible(x)
 

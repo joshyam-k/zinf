@@ -4,25 +4,15 @@ zinf_freq <- function(x, ...){
 }
 
 #' @export
-#' @rawNamespace export(zinf_freq.formula)
-
-zinf_freq.formula <- function(formula_lm, formula_logreg, data, ...) {
+#' @rawNamespace export(zinf_freq.merMod)
+zinf_freq.merMod <- function(mody, modp, ...) {
 
   funcCall <- match.call(expand.dots = T)
-  check_names_match(formula_lm, formula_logreg, names(data))
-  validate_args(formula_lm, formula_logreg, data)
 
-  response <- formula_lm[[2]]
-
-  nz_data <- data |>
-    dplyr::filter(!!response > 0)
-
-  mod_y <- lme4::lmer(formula_lm, nz_data)
-  mod_z <- lme4::glmer(formula_logreg, data, family = "binomial")
+  validate_models_f(mody, modp)
 
   out <- list(
-    lm = mod_y,
-    logreg = mod_z,
+    mods = list(mody, modp),
     call = funcCall
   )
 
@@ -31,12 +21,13 @@ zinf_freq.formula <- function(formula_lm, formula_logreg, data, ...) {
 
 }
 
+
 #' @export
 summary.zinf_freq <- function(object, ...) {
+
   out <- list(
-    call = object$call,
-    lm = object$lm,
-    logreg = object$logreg
+    s1 = summary(object$mods[[1]]),
+    s2 = summary(object$mods[[2]])
   )
 
   class(out) <- "summary.zinf_freq"
@@ -44,28 +35,39 @@ summary.zinf_freq <- function(object, ...) {
 }
 
 #' @export
-print.summary.zinf_freq <- function(object, ...) {
+print.summary.zinf_freq <- function(x, ...) {
 
-  summary_lm <- summary(object$lm)
-  summary_logreg <- summary(object$logreg)
-  both_summary <- list(
-    '---------------Y Mod---------------',
-    summary_lm,
-    '---------------Z Mod---------------',
-    summary_logreg
-    )
-  purrr::walk(both_summary, print)
+  cat("--------\nY MODEL: \n--------\n")
+  print(x$s1)
+  cat("\n\n--------\nZ MODEL: \n-------- \n")
+  print(x$s2)
+  invisible(x)
 
 }
 
 #' @export
 predict.zinf_freq <- function(object, newdata = NULL, ...) {
-  lm <- object$lm
-  logreg <- object$logreg
+  lm <- object$mods[[1]]
+  logreg <- object$mods[[2]]
   pred_lm <- predict(lm, newdata = newdata, type = "response")
   pred_logreg <- predict(logreg, newdata = newdata, type = "response")
   pred <- pred_lm * pred_logreg
-  return(pred)
+
+  # need to compute means by the grouping variable
+  grp_var <- names(object$mods[[1]]@flist)
+  sym_grp_var <- rlang::sym(grp_var)
+
+  bind <- newdata |>
+    dplyr::mutate(preds = pred) |>
+    dplyr::group_by(!!sym_grp_var) |>
+    dplyr::summarise(prediction = mean(preds))
+
+  return(bind)
 }
 
 
+
+# y <- lme4::lmer(mpg ~ wt + (1 | cyl), mtcars)
+# p <- lme4::glmer(mpg > 16 ~ wt + (1 | cyl), family = binomial, mtcars)
+#
+# mod <- zinf_freq(y, p)

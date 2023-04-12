@@ -17,5 +17,6 @@ Imports:
   purrr,
   tidyselect,
   broom,
-  rstanarm
+  rstanarm,
+  rlang
 RoxygenNote: 7.2.3

@@ -1,85 +1,17 @@
 # Imports
 #' @importFrom cli cli_abort
 
-validate_args <- function(f1, f2, x) {
-
-  args_val <- function(f, x) {
-    if(attr(terms(f), "response") == 0)
-      cli_abort(c(
-        "x" = "Formula object must include a response variable"
-      ))
-    if(!is.data.frame(x))
-      cli_abort(c(
-        "x" = "argument `data` must be of class 'data.frame'"
-      ))
-  }
-
-  purrr::walk(c(f1, f2), ~ args_val(.x, x))
-
+validate_models_f <- function(m1, m2) {
+  if(class(m1) != "lmerMod")
+    cli_abort(c(
+      "x" = "zinf_freq models require the first model to be of class lmerMod"
+    ))
+  if(class(m2) != "glmerMod")
+    cli_abort(c(
+      "x" = "zinf_freq models require the second model to be of class glmerMod"
+    ))
 }
 
-check_mlm <- function(all_terms) {
-
-  by_term <- function(term) {
-    if(stringr::str_detect(term, "\\|")) {
-      return(TRUE)
-    } else {
-      return(FALSE)
-    }
-  }
-
-  out <- sum(purrr::map_dbl(all_terms, by_term))
-
-  return(ifelse(out > 0, TRUE, FALSE))
-
-}
-
-extract_var_from_rf <- function(all_terms) {
-
-  by_term <- function(term) {
-    term <- stringr::str_remove(term, "1\\s?\\|") |>
-      stringr::str_trim(side = "both")
-
-    return(term)
-  }
-
-  out <- purrr::map_chr(all_terms, by_term)
-  return(out)
-
-}
-
-check_names_match <- function(f1, f2, ref) {
-
-  name_match <- function(object, ref) {
-    object <- terms(object)
-    factors <- row.names(attr(object, "factors"))
-    term_labels <- attr(object, "term.labels")
-
-    mlm <- check_mlm(term_labels)
-
-    if(mlm) {
-
-      non_reffect_terms <- factors[!stringr::str_detect(factors, "\\|")]
-      reffect <- factors[stringr::str_detect(factors, "\\|")]
-      reffect_terms <- extract_var_from_rf(reffect)
-
-      all_names <- c(non_reffect_terms, reffect_terms)
-
-    } else {
-      all_names <- factors
-    }
-
-    if(!all(all_names %in% ref)) {
-      cli_abort(c(
-        "x" = "All names specified in the formula must also exist in the input dataset"
-      ))
-    }
-  }
-
-  purrr::walk(c(f1, f2), ~ name_match(.x, ref))
-
-
-}
 
 check_family <- function(o1, o2) {
   if(!(o1 %in% c("Gamma", "gaussian"))){
@@ -195,9 +127,6 @@ full_gaussian_predict <- function(mcmc_y, mcmc_p, grp_id, fixed_term, newdata) {
   post_pred <- apply(full, 2, mean)
 
   return(post_pred)
-
-
-
 
 
 }
