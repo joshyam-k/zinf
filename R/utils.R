@@ -124,7 +124,7 @@ gamma_predict <- function(mcmc, grp_id, fixed_term, newdata, link = "log") {
     t()
 
   mat_alpha <- mcmc |>
-    dplyr::select("alpha") |>
+    dplyr::select("shape") |>
     as.matrix()
 
   rownames(newdata) <- NULL
@@ -139,7 +139,7 @@ gamma_predict <- function(mcmc, grp_id, fixed_term, newdata, link = "log") {
 
 
   if (link == "log") {
-    mat_mult <- log(mat_mult)
+    mat_mult <- exp(mat_mult)
   } else if (link == "inverse") {
     mat_mult <- -1/mat_mult
   } else if (link == "identity") {
@@ -180,6 +180,7 @@ full_predict <- function(mcmc_y, mcmc_p, grp_id, fixed_term, newdata, family = "
   full <- y_component * p_component
 
   post_pred <- apply(full, 2, mean)
+
 
   return(post_pred)
 

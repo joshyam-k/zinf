@@ -133,7 +133,17 @@ predict.zinf_bayes <- function(object, newdata, ...) {
   mean_pred_res <- all_res |>
     purrr::map_dbl(mean)
 
-  return(mean_pred_res)
+  point_res <- data.frame(
+    ids = all_grps,
+    post_pred_centers = mean_pred_res
+  )
+
+  out <- list(
+    posterior_predictive_centers = point_res,
+    posterior_predictive_distribution = tibble(x = unlist(all_res))
+  )
+
+  return(out)
 
 }
 

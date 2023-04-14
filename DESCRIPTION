@@ -16,6 +16,7 @@ Imports:
   stringr,
   purrr,
   tidyselect,
+  tibble,
   broom,
   rstanarm,
   rlang
