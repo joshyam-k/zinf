@@ -134,7 +134,7 @@ predict.zinf_bayes <- function(object, newdata, ...) {
     purrr::map_dbl(mean)
 
   point_res <- data.frame(
-    ids = all_grps,
+    group = all_grps,
     post_pred_centers = mean_pred_res
   )
 
@@ -143,7 +143,7 @@ predict.zinf_bayes <- function(object, newdata, ...) {
     posterior_predictive_distribution = tibble(
       x = unlist(all_res),
       # this ordering should be correct because of sorting above
-      id = sort(rep(all_grps, nrow(mod_y)))
+      group = sort(rep(all_grps, nrow(mod_y)))
       )
   )
 
