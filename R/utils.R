@@ -86,7 +86,7 @@ normal_predict <- function(mcmc, grp_id, fixed_term, newdata) {
     dplyr::select(tidyselect::all_of(c("(Intercept)", fixed_term, rf))) |>
     t()
 
-  mcmc_sigma <- mcmc |>
+  mat_sigma <- mcmc |>
     dplyr::select("sigma") |>
     as.matrix()
 
@@ -104,7 +104,7 @@ normal_predict <- function(mcmc, grp_id, fixed_term, newdata) {
     rnorm(1, mean = x, sd = sig)
   }
 
-  mat_sim <- mapply(sim_normal, x = mat_mult, sig = mcmc_sigma) |>
+  mat_sim <- mapply(sim_normal, x = mat_mult, sig = mat_sigma) |>
     matrix(ncol = nrow(mcmc))
 
   return(mat_sim)
@@ -112,9 +112,64 @@ normal_predict <- function(mcmc, grp_id, fixed_term, newdata) {
 
 }
 
-full_gaussian_predict <- function(mcmc_y, mcmc_p, grp_id, fixed_term, newdata) {
+
+gamma_predict <- function(mcmc, grp_id, fixed_term, newdata, link = "log") {
+
+  rf <- names(mcmc) |>
+    stringr::str_subset("b\\[") |>
+    stringr::str_subset(paste0(":", as.character(grp_id), "]"))
+
+  mat_mcmc_sub <- mcmc |>
+    dplyr::select(tidyselect::all_of(c("(Intercept)", fixed_term, rf))) |>
+    t()
+
+  mat_alpha <- mcmc |>
+    dplyr::select("alpha") |>
+    as.matrix()
+
+  rownames(newdata) <- NULL
+
+  mat_newdata <- newdata |>
+    dplyr::select(tidyselect::all_of(fixed_term)) |>
+    dplyr::mutate(intercept = 1, rf = 1) |>
+    dplyr::select(intercept, tidyselect::all_of(fixed_term), rf) |>
+    as.matrix()
+
+  mat_mult <- mat_newdata %*% mat_mcmc_sub
+
+
+  if (link == "log") {
+    mat_mult <- log(mat_mult)
+  } else if (link == "inverse") {
+    mat_mult <- -1/mat_mult
+  } else if (link == "identity") {
+    mat_mult <- mat_mult
+  } else {
+    cli_abort(c(
+      "x" = "Only `log`, `inverse`, and `identity` link functions are currently supported for the Gamma glm"
+    ))
+  }
+
+  sim_gamma <- function(x, alpha) {
+    rgamma(1, shape = alpha, rate = alpha/x)
+  }
+
+  mat_sim <- mapply(sim_gamma, x = mat_mult, alpha = mat_alpha) |>
+    matrix(ncol = nrow(mcmc))
+
+  return(mat_sim)
+
+}
+
+
+full_predict <- function(mcmc_y, mcmc_p, grp_id, fixed_term, newdata, family = "gaussian", link = "identity") {
   p_component <- log_reg_predict(mcmc_p, grp_id, fixed_term, newdata)
-  y_component <- normal_predict(mcmc_y, grp_id, fixed_term, newdata)
+
+  if (family == "gaussian") {
+    y_component <- normal_predict(mcmc_y, grp_id, fixed_term, newdata)
+  } else if (family == "Gamma") {
+    y_component <- gamma_predict(mcmc_y, grp_id, fixed_term, newdata, link = link)
+  }
 
   if(!all(dim(p_component) == dim(y_component))) {
     cli_abort(c(

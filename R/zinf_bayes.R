@@ -81,7 +81,7 @@ predict.zinf_bayes <- function(object, newdata, ...) {
   grp_term <- stringr::str_extract(mod_terms[rand_id], "(?<=(\\|)).*") |>
     stringr::str_trim(side = "both")
 
-  all_grps <- unique(newdata[ , grp_term])
+  all_grps <- unique(newdata[ , grp_term]) |> pull()
 
   fixed_term <- mod_terms[-rand_id]
 
@@ -103,12 +103,28 @@ predict.zinf_bayes <- function(object, newdata, ...) {
     all_res <- purrr::map2(
       .x = test_sets,
       .y = all_grps,
-      .f = ~ full_gaussian_predict(
+      .f = ~ full_predict(
         mcmc_y = mod_y,
         mcmc_p = mod_p,
         grp_id = .y,
         fixed_term = fixed_term,
         newdata = .x
+      )
+    )
+
+  } else if (family_y == "Gamma") {
+
+    all_res <- purrr::map2(
+      .x = test_sets,
+      .y = all_grps,
+      .f = ~ full_predict(
+        mcmc_y = mod_y,
+        mcmc_p = mod_p,
+        grp_id = .y,
+        fixed_term = fixed_term,
+        newdata = .x,
+        family = "Gamma",
+        link = link_y
       )
     )
 
@@ -126,8 +142,8 @@ predict.zinf_bayes <- function(object, newdata, ...) {
 # ex ---------
 # library(rstanarm)
 # t <- stan_lmer(
-#   Y ~ X + (1 | rfid),
-#   data = df,
+#   mpg ~ wt + (1 | cyl),
+#   data = mtcars,
 #   prior_intercept = normal(40, 10),
 #   prior = normal(3, 1),
 #   prior_aux = exponential(1),
@@ -137,8 +153,8 @@ predict.zinf_bayes <- function(object, newdata, ...) {
 # )
 #
 # p <- stan_glmer(
-#   Z ~X + (1 | rfid),
-#   data = df,
+#   mpg > 16 ~ wt + (1 | cyl),
+#   data = mtcars,
 #   family = binomial,
 #   prior_intercept = normal(40, 10),
 #   prior = normal(3, 1),

@@ -16,7 +16,7 @@
 An object of class `zinf_bayes`.
 }
 \description{
-zinf_bayes is a generic function used to wrap together the two individual
+`zinf_bayes()` is a generic function used to wrap together the two individual
 models in a zero-inflation model. The function invokes particular methods
 such as `summary` and `predict` that allow it to be used within typical
 R modeling workflows
