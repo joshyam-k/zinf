@@ -179,6 +179,8 @@ full_predict <- function(mcmc_y, mcmc_p, grp_id, fixed_term, newdata, family = "
 
   full <- y_component * p_component
 
+
+
   post_pred <- apply(full, 2, mean)
 
 
@@ -186,3 +188,14 @@ full_predict <- function(mcmc_y, mcmc_p, grp_id, fixed_term, newdata, family = "
 
 
 }
+
+interval_lower_compute <- function(x) {
+  q<- quantile(x, probs = c(0.025, 0.975), na.rm = T)
+  return(q[1])
+}
+
+interval_upper_compute <- function(x) {
+  q<- quantile(x, probs = c(0.025, 0.975), na.rm = T)
+  return(q[2])
+}
+

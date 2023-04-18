@@ -133,9 +133,17 @@ predict.zinf_bayes <- function(object, newdata, ...) {
   mean_pred_res <- all_res |>
     purrr::map_dbl(mean)
 
+  pred_interval_lower <- all_res |>
+    purrr::map_dbl(interval_lower_compute)
+
+  pred_interval_upper <- all_res |>
+    purrr::map_dbl(interval_upper_compute)
+
   point_res <- data.frame(
     group = all_grps,
-    post_pred_centers = mean_pred_res
+    post_pred_centers = mean_pred_res,
+    lower = pred_interval_lower,
+    upper = pred_interval_upper
   )
 
   out <- list(
